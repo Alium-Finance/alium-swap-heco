@@ -21,7 +21,7 @@ library AliumLibrary {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'95a4e56d2c30968161e798529812f3cf2b8bb25e5fb10a5b2c4065d46a21eb48' // init code hash                  
+                hex'25c1427c313ae5ef5f43f21b21e260f4e278e19616bb3c570e41c050d5b1202a' // init code hash
             ))));
     }
 
@@ -44,9 +44,9 @@ library AliumLibrary {
     function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
         require(amountIn > 0, 'AliumLibrary: INSUFFICIENT_INPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'AliumLibrary: INSUFFICIENT_LIQUIDITY');
-        uint amountInWithFee = amountIn.mul(998);
+        uint amountInWithFee = amountIn.mul(9_975);
         uint numerator = amountInWithFee.mul(reserveOut);
-        uint denominator = reserveIn.mul(1000).add(amountInWithFee);
+        uint denominator = reserveIn.mul(10_000).add(amountInWithFee);
         amountOut = numerator / denominator;
     }
 
@@ -54,8 +54,8 @@ library AliumLibrary {
     function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) internal pure returns (uint amountIn) {
         require(amountOut > 0, 'AliumLibrary: INSUFFICIENT_OUTPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'AliumLibrary: INSUFFICIENT_LIQUIDITY');
-        uint numerator = reserveIn.mul(amountOut).mul(1000);
-        uint denominator = reserveOut.sub(amountOut).mul(998);
+        uint numerator = reserveIn.mul(amountOut).mul(10_000);
+        uint denominator = reserveOut.sub(amountOut).mul(9_975);
         amountIn = (numerator / denominator).add(1);
     }
 
