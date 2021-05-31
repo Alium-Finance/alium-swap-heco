@@ -8,9 +8,9 @@ contract AliumFactory is IAliumFactory {
 
     address public feeTo;
     address public feeToSetter;
+    uint256 private _allPairs;
 
     mapping(address => mapping(address => address)) public getPair;
-    address[] public allPairs;
 
     event PairCreated(address indexed token0, address indexed token1, address pair, uint);
 
@@ -19,7 +19,7 @@ contract AliumFactory is IAliumFactory {
     }
 
     function allPairsLength() external view returns (uint) {
-        return allPairs.length;
+        return _allPairs;
     }
 
     function createPair(address tokenA, address tokenB) external returns (address pair) {
@@ -35,8 +35,8 @@ contract AliumFactory is IAliumFactory {
         IAliumPair(pair).initialize(token0, token1);
         getPair[token0][token1] = pair;
         getPair[token1][token0] = pair; // populate mapping in the reverse direction
-        allPairs.push(pair);
-        emit PairCreated(token0, token1, pair, allPairs.length);
+        _allPairs++;
+        emit PairCreated(token0, token1, pair, _allPairs);
     }
 
     function setFeeTo(address _feeTo) external {
