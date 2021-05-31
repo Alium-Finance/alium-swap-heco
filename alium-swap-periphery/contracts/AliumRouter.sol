@@ -58,6 +58,12 @@ contract AliumRouter is IAliumRouter02 {
             }
         }
     }
+
+    struct PairBalance {
+        uint256 beforeBalanceA;
+        uint256 beforeBalanceB;
+    }
+
     function addLiquidity(
         address tokenA,
         address tokenB,
@@ -70,8 +76,20 @@ contract AliumRouter is IAliumRouter02 {
     ) external virtual override ensure(deadline) returns (uint amountA, uint amountB, uint liquidity) {
         (amountA, amountB) = _addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin);
         address pair = AliumLibrary.pairFor(factory, tokenA, tokenB);
+        PairBalance memory balances;
+        balances.beforeBalanceA = IAliumPair(tokenA).balanceOf(pair);
+        balances.beforeBalanceB = IAliumPair(tokenB).balanceOf(pair);
         TransferHelper.safeTransferFrom(tokenA, msg.sender, pair, amountA);
         TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
+        require(
+            // minus becouse
+            IAliumPair(tokenA).balanceOf(pair) - (balances.beforeBalanceA) == amountA,
+            'AliumRouter: TOKEN_A_DEFLATIONARY'
+        );
+        require(
+            IAliumPair(tokenB).balanceOf(pair) - (balances.beforeBalanceB) == amountB,
+            'AliumRouter: TOKEN_B_DEFLATIONARY'
+        );
         liquidity = IAliumPair(pair).mint(to);
     }
     function addLiquidityETH(
@@ -91,7 +109,12 @@ contract AliumRouter is IAliumRouter02 {
             amountETHMin
         );
         address pair = AliumLibrary.pairFor(factory, token, WETH);
+        uint256 beforeBalance = IAliumPair(token).balanceOf(pair);
         TransferHelper.safeTransferFrom(token, msg.sender, pair, amountToken);
+        require(
+            IAliumPair(token).balanceOf(pair).sub(beforeBalance) == amountToken,
+            'AliumRouter: TOKEN_DEFLATIONARY'
+        );
         IWETH(WETH).deposit{value: amountETH}();
         assert(IWETH(WETH).transfer(pair, amountETH));
         liquidity = IAliumPair(pair).mint(to);
